@@ -17,6 +17,10 @@
 
 #include "common.hpp"
 #include "Server.hpp"
+#include <string.h>
+#include <set>
+
+
 
 
 /**
@@ -35,7 +39,6 @@ int get_file_length(ifstream *file){
 
 }
 
-
 void Server::initialize(unsigned int board_size, string p1_setup_board,
                         string p2_setup_board) {
     int c1, c2;
@@ -48,6 +51,7 @@ void Server::initialize(unsigned int board_size, string p1_setup_board,
     } else {}
     while (!this->p1_setup_board.eof()) {
         getline(this->p1_setup_board, p1b);
+        //cout << p1b << "\n";
         c1++;
     }
     while (!this->p2_setup_board.eof()) {
@@ -58,22 +62,51 @@ void Server::initialize(unsigned int board_size, string p1_setup_board,
         //cout << "Error: Player board sizes do not match\n" << "Player 1: " << c1 << "\nPlayer 2: " << c2 << "\nBoard size: " << board_size << "\n";
         throw "Error board sizes do NOT match";
     }
+
+    //Set the board size and clear and move position back to beginning
     this->board_size = board_size;
+    this->p1_setup_board.clear();
+    this->p1_setup_board.seekg(0, ios::beg);
+    this->p2_setup_board.clear();
+    this->p2_setup_board.seekg(0, ios::beg);
 }
 
 int Server::evaluate_shot(unsigned int player, unsigned int x, unsigned int y) {
-    char board[board_size][board_size];
-    if (x > board_size || y > board_size){
-        throw "Error: Shot is out of bounds";
-    }
-    if (player > MAX_PLAYERS || player < 0) {
-        throw "Error: Invalid player number";
-    }
-    //TODO: Add hit detection
+    char location;
+    string tmp;
 
+    //First check if shots are out of bounds
+    if (x > board_size || y > board_size || x < 0 || y < 0) {
+        return 0; //Out of bounds
+    } else {
+        //For each player find shot location
+        if (player == 1) {
+            for (int row = 0; row < y; row++) {
+                getline(this->p1_setup_board, tmp);
+            }
+            location = tmp[x - 1];
+        } else if (player == 2) {
+            for (int row = 0; row < y; row++) {
+                getline(this->p2_setup_board, tmp);
+            }
+            location = tmp[x - 1];
+        } else {
+            throw "Error: Invalid player number";
+        }
+    }
+    //Check if location is a miss
+    if (location == '_') {
+        return -1; //Miss
+    } else {
+        return 1; //Hit
+    }
 }
 
 
 int Server::process_shot(unsigned int player) {
+
+    ifstream inFile;
+    inFile.open("player_" + std::to_string(player) + ".shot.json");
+
     return NO_SHOT_FILE;
 }
