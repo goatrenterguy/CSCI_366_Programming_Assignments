@@ -16,12 +16,18 @@
 
 #include "common.hpp"
 #include "Client.hpp"
+#include <cereal/archives/json.hpp>
 
 Client::~Client() {
 }
 
 
 void Client::initialize(unsigned int player, unsigned int board_size){
+    char board[board_size][board_size];
+    std::ofstream file("player_"+ std::to_string(player)+".actionboard.json", ios::out);
+    cereal::JSONOutputArchive archive(file);
+
+    initialized = true;
 }
 
 
