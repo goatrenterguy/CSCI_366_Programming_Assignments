@@ -39,7 +39,6 @@ int get_file_length(ifstream *file){
 
 }
 
-
 void Server::initialize(unsigned int board_size, string p1_setup_board,
                         string p2_setup_board) {
     int c1, c2;
@@ -52,6 +51,7 @@ void Server::initialize(unsigned int board_size, string p1_setup_board,
     } else {}
     while (!this->p1_setup_board.eof()) {
         getline(this->p1_setup_board, p1b);
+        //cout << p1b << "\n";
         c1++;
     }
     while (!this->p2_setup_board.eof()) {
