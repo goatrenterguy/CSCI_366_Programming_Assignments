@@ -19,6 +19,10 @@
 #include "Server.hpp"
 #include <string.h>
 #include <set>
+#include <iostream>
+#include <fstream>
+#include <cereal/archives/json.hpp>
+#include <cereal/types/vector.hpp>
 
 
 
@@ -47,28 +51,29 @@ void Server::initialize(unsigned int board_size, string p1_setup_board,
     this->p2_setup_board.open(p2_setup_board);
     string p1b, p2b;
     if (!this->p1_setup_board || !this->p2_setup_board) {
-        throw "Bad file name";
-    } else {}
-    while (!this->p1_setup_board.eof()) {
-        getline(this->p1_setup_board, p1b);
-        //cout << p1b << "\n";
-        c1++;
-    }
-    while (!this->p2_setup_board.eof()) {
-        getline(this->p2_setup_board, p2b);
-        c2++;
-    }
-    if (c1 != c2 || c1 != board_size || c2 != board_size) {
-        //cout << "Error: Player board sizes do not match\n" << "Player 1: " << c1 << "\nPlayer 2: " << c2 << "\nBoard size: " << board_size << "\n";
-        throw "Error board sizes do NOT match";
-    }
+        throw ServerException("Bad file name");
+    } else {
+        while (!this->p1_setup_board.eof()) {
+            getline(this->p1_setup_board, p1b);
+            //cout << p1b << "\n";
+            c1++;
+        }
+        while (!this->p2_setup_board.eof()) {
+            getline(this->p2_setup_board, p2b);
+            c2++;
+        }
+        if (c1 != c2 || c1 != board_size || c2 != board_size) {
+            //cout << "Error: Player board sizes do not match\n" << "Player 1: " << c1 << "\nPlayer 2: " << c2 << "\nBoard size: " << board_size << "\n";
+            throw ServerException("Error board sizes do NOT match -initialize");
+        }
 
-    //Set the board size and clear and move position back to beginning
-    this->board_size = board_size;
-    this->p1_setup_board.clear();
-    this->p1_setup_board.seekg(0, ios::beg);
-    this->p2_setup_board.clear();
-    this->p2_setup_board.seekg(0, ios::beg);
+        //Set the board size and clear and move position back to beginning
+        this->board_size = board_size;
+        this->p1_setup_board.clear();
+        this->p1_setup_board.seekg(0, ios::beg);
+        this->p2_setup_board.clear();
+        this->p2_setup_board.seekg(0, ios::beg);
+    }
 }
 
 int Server::evaluate_shot(unsigned int player, unsigned int x, unsigned int y) {
@@ -76,22 +81,22 @@ int Server::evaluate_shot(unsigned int player, unsigned int x, unsigned int y) {
     string tmp;
 
     //First check if shots are out of bounds
-    if (x > board_size || y > board_size || x < 0 || y < 0) {
+    if (x >= board_size || y  >= board_size || x < 0 || y < 0) {
         return 0; //Out of bounds
     } else {
         //For each player find shot location
         if (player == 1) {
-            for (int row = 0; row < y; row++) {
+            for (int row = 0; row <= y; row++) {
                 getline(this->p1_setup_board, tmp);
             }
-            location = tmp[x - 1];
+            location = tmp[x];
         } else if (player == 2) {
-            for (int row = 0; row < y; row++) {
+            for (int row = 0; row <= y; row++) {
                 getline(this->p2_setup_board, tmp);
             }
-            location = tmp[x - 1];
+            location = tmp[x];
         } else {
-            throw "Error: Invalid player number";
+            throw ServerException("Error: Invalid player number -evaluate_shot");
         }
     }
     //Check if location is a miss
@@ -104,9 +109,32 @@ int Server::evaluate_shot(unsigned int player, unsigned int x, unsigned int y) {
 
 
 int Server::process_shot(unsigned int player) {
+    //File names
+    string fInName = "player_" + std::to_string(player) + ".shot.json";
+    string fOutName = "player_"+ std::to_string(player) + ".result.json";
 
-    ifstream inFile;
-    inFile.open("player_" + std::to_string(player) + ".shot.json");
+    unsigned int x, y;
 
-    return NO_SHOT_FILE;
+    ifstream inFile(fInName);
+    if (player > MAX_PLAYERS || player <= 0) {
+        throw ServerException("Incorrect player number -process_shot");
+    } else if (!inFile.good()) {
+        return NO_SHOT_FILE;
+    } else {
+        //Read the archive
+        cereal::JSONInputArchive read_archive(inFile); // initialize an archive on the file
+        read_archive(x,y); // deserialize the array
+        inFile.close(); // close the file
+        remove(fInName.c_str());
+
+        int result = evaluate_shot(player, x,y);
+
+        //Write to the result.json
+        ofstream outFile(fOutName);
+        cereal::JSONOutputArchive write_archive(outFile);
+        write_archive(cereal::make_nvp("result", result)); // serialize the data giving it a name
+        outFile << "\n}";
+        outFile.close(); // close the file
+        return SHOT_FILE_PROCESSED;
+    }
 }

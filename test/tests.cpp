@@ -83,15 +83,15 @@ protected:
 };
 
 TEST_F(ServerEvaluateShot, Hit_Detected){
-    ASSERT_EQ(HIT, srv.evaluate_shot(1,9,0));
+    ASSERT_EQ(HIT, srv.evaluate_shot(2,9,0));
 }
 
 TEST_F(ServerEvaluateShot, Miss_Detected){
-    ASSERT_EQ(MISS, srv.evaluate_shot(1,9,1));
+    ASSERT_EQ(MISS, srv.evaluate_shot(2,9,1));
 }
 
 TEST_F(ServerEvaluateShot, Out_Of_Bounds_X){
-    ASSERT_EQ(OUT_OF_BOUNDS, srv.evaluate_shot(1,srv.board_size+1,1));
+    ASSERT_EQ(OUT_OF_BOUNDS, srv.evaluate_shot(2,srv.board_size+1,1));
 }
 
 TEST_F(ServerEvaluateShot, Out_Of_Bounds_Y){
@@ -140,7 +140,7 @@ TEST_F(ServerProcessShot, Hit_Detected){
 }
 
 TEST_F(ServerProcessShot, Miss_Detected){
-    set_up_shot(1, 1);
+    set_up_shot(5, 5);
     srv.process_shot(1);
     ASSERT_EQ(0, get_diff_dist("correct_miss_result.json", "player_1.result.json"));
 }
