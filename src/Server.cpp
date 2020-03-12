@@ -69,10 +69,8 @@ void Server::initialize(unsigned int board_size, string p1_setup_board,
 
         //Set the board size and clear and move position back to beginning
         this->board_size = board_size;
-        this->p1_setup_board.clear();
-        this->p1_setup_board.seekg(0, ios::beg);
-        this->p2_setup_board.clear();
-        this->p2_setup_board.seekg(0, ios::beg);
+
+
     }
 }
 
