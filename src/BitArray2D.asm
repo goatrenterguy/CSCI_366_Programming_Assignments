@@ -13,6 +13,20 @@ set_bit_elem:
         ; rcx contains col
 
         ; add your code here
+        ; Index
+        mul rdx, rsi
+        add rcx, rsi
+        push rsi
+        ; Byte offset
+        div 8, rsi
+        push rsi
+        ; Bit offset
+        mul rsi, 8
+        ; Create mask
+        mov rdx, 1
+        sub rsi, 8
+        sbl rdx, rsi
+
 
         mov rsp, rbp        ; restore stack pointer to before we pushed parameters onto the stack
         pop rbp             ; remove rbp from the stack to restore rsp to initial value
