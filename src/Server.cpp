@@ -45,21 +45,22 @@ int get_file_length(ifstream *file){
 
 void Server::initialize(unsigned int board_size, string p1_setup_board,
                         string p2_setup_board) {
+	this->board_size = board_size;
     int c1, c2;
     c1 = -1, c2 = -1;
-    this->p1_setup_board.open(p1_setup_board);
-    this->p2_setup_board.open(p2_setup_board);
+    ifstream P1_Board(p1_setup_board);
+	ifstream P2_Board(p2_setup_board);
     string p1b, p2b;
     if (!this->p1_setup_board || !this->p2_setup_board) {
         throw ServerException("Bad file name");
     } else {
-        while (!this->p1_setup_board.eof()) {
-            getline(this->p1_setup_board, p1b);
+        while (!P1_Board.eof()) {
+            getline(P1_Board, p1b);
             //cout << p1b << "\n";
             c1++;
         }
-        while (!this->p2_setup_board.eof()) {
-            getline(this->p2_setup_board, p2b);
+        while (!P2_Board.eof()) {
+            getline(P2_Board, p2b);
             c2++;
         }
         if (c1 != c2 || c1 != board_size || c2 != board_size) {
@@ -69,42 +70,31 @@ void Server::initialize(unsigned int board_size, string p1_setup_board,
 
         //Set the board size and clear and move position back to beginning
         this->board_size = board_size;
-        this->p1_setup_board.clear();
-        this->p1_setup_board.seekg(0, ios::beg);
-        this->p2_setup_board.clear();
-        this->p2_setup_board.seekg(0, ios::beg);
+        P1_Board.clear();
+        P1_Board.seekg(0, ios::beg);
+        P2_Board.clear();
+        P2_Board.seekg(0, ios::beg);
     }
 }
 Server::~Server() {
 }
 BitArray2D *Server::scan_setup_board(string setup_board_name){
+	BitArray2D Setup_Board = BitArray2D(board_size, board_size);
+	return &Setup_Board;
 }
 
 int Server::evaluate_shot(unsigned int player, unsigned int x, unsigned int y) {
-    char location;
-    string tmp;
+	int result = 0;
+	if (player == 1) {
+		result = this->p1_setup_board->get(x,y);
+	} else if (player == 2) {
+		result = this->p2_setup_board->get(x,y);
+	} else {
+		throw ServerException("Invalid player number");
+	}
 
-    //First check if shots are out of bounds
-    if (x >= board_size || y  >= board_size || x < 0 || y < 0) {
-        return 0; //Out of bounds
-    } else {
-        //For each player find shot location
-        if (player == 1) {
-            for (int row = 0; row <= y; row++) {
-                getline(this->p1_setup_board, tmp);
-            }
-            location = tmp[x];
-        } else if (player == 2) {
-            for (int row = 0; row <= y; row++) {
-                getline(this->p2_setup_board, tmp);
-            }
-            location = tmp[x];
-        } else {
-            throw ServerException("Error: Invalid player number -evaluate_shot");
-        }
-    }
     //Check if location is a miss
-    if (location == '_') {
+    if (result == 0) {
         return -1; //Miss
     } else {
         return 1; //Hit
