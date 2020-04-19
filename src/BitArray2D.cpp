@@ -23,6 +23,7 @@ BitArray2D::BitArray2D(unsigned int rows, unsigned int columns) {
 	} else {
 		this->rows = rows;
 		this->columns = columns;
+		this->array = (char *)(calloc(ceil(rows * columns/8.0), sizeof(char)));
 	}
 
 }
@@ -35,7 +36,7 @@ BitArray2D::~BitArray2D() {
 
 bool BitArray2D::get(unsigned int row, unsigned int column){
 	// check array bounds
-	if (row < 0 || row > this->rows || column < 0 || column > this->columns){
+	if (row < 0 || row > this->rows - 1|| column < 0 || column > this->columns - 1){
 		throw BitArray2DException("Out of bounds");
 	} else {
 		// get the element
@@ -47,7 +48,7 @@ bool BitArray2D::get(unsigned int row, unsigned int column){
 
 void BitArray2D::set(unsigned int row, unsigned int column){
 	// check array bounds
-	if (row < 0 || row > this->rows || column < 0 || column > this->columns){
+	if (row < 0 || row > this->rows - 1 || column < 0 || column > this->columns - 1){
 		throw BitArray2DException("Out of bounds");
 	} else {
 		// set the element

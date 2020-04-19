@@ -27,16 +27,22 @@ _set_bit_elem:
         push rcx
         sub rdx, rsi
         ; Create mask
-        mov rcx, 1
-        mov rsi, 7
-        sub rsi, rdx
-        mov cl, [rsi]
-        sal rcx, cl
+        mov rsi, 1
+        mov rcx, 7
+        sub rcx, rdx
+        ;loop that shifts left by 1
+        .loop:
+        cmp rcx, 0
+        je .continue
+		dec rcx
+        sal rsi, 1
+        jnz .loop
         ; Or them together
-		pop rsi ; byte offset
-		mov rdx, [rdi + rsi]
-		or rdx, rcx
-		mov [rdi + rsi], rdx
+        .continue:
+		pop rcx ; byte offset
+		mov rdx, [rdi + rcx] ;move byte into rdx
+		or rdx, rsi ; or them to gether to flip bit
+		mov [rdi + rcx], rdx ; move byte back (not sure how this works)
 
         mov rsp, rbp        ; restore stack pointer to before we pushed parameters onto the stack
         pop rbp             ; remove rbp from the stack to restore rsp to initial value
@@ -55,37 +61,37 @@ _get_bit_elem:
         ; rcx contains col
 
         ; add your code here - for now returning 0
+		; add your code here
 		; Index
-        mov eax, [rsi]
-        mul rdx
-        mov rsi, [eax]
+        imul rsi, rdx
         add rsi, rcx
         push rsi
         ; Byte offset
-        mov eax, [rsi]
-        mov rsi, 8
-        div rsi
-        mov rsi, [eax]
+        shr rsi, 3
         push rsi
         ; Bit offset
-        mov eax, [rsi]
-        mov rsi, 8
-        mul rsi
-        mov rsi, [eax]
+        imul rsi, 8
         pop rcx
         pop rdx
         push rcx
-        sub rdx, [rsi]
+        sub rdx, rsi
         ; Create mask
-        mov rcx, 1
-        mov cl, 7
-        sub cl, [rdx]
-        shl rcx, cl
+        mov rsi, 1
+        mov rcx, 7
+        sub rcx, rdx
+        ;loop that shifts left by 1
+        .loop:
+        cmp rcx, 0
+        je .continue
+		dec rcx
+        sal rsi, 1
+        jnz .loop
         ; Or them together
-		pop rsi ; byte offset
-		mov rdx, [rdi + rsi]
-		and rdx, rcx
-		cmp rdi, 0          ; check if any bits set in rdi
+        .continue:
+		pop rcx ; byte offset
+		mov rdx, [rdi + rcx] ;move byte into rdx
+        and rdx, rsi ; and them together to get bit
+		cmp rdx, 0          ; check if any bits set in rdi
         setg al
         movsx rax, al
 
