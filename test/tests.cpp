@@ -172,7 +172,7 @@ protected:
 };
 
 TEST_F(ServerEvaluateShot, Hit_Detected){
-    ASSERT_EQ(HIT, srv.evaluate_shot(2,9,0));
+    ASSERT_EQ(HIT, srv.evaluate_shot(1,9,0));
 }
 
 TEST_F(ServerEvaluateShot, Miss_Detected){
@@ -214,7 +214,7 @@ protected:
 
     void set_up_shot(unsigned int x, unsigned int y){
         string coords = "{\"x\": "+to_string(x)+",\"y\": "+to_string(y)+"}";
-        ofstream shot_file("player_2.shot.json");
+        ofstream shot_file("player_1.shot.json");
         shot_file << coords;
         shot_file.close();
     }
@@ -224,34 +224,34 @@ protected:
     }
 
     void TearDown() override{
-        remove("player_2.shot.json");
-        remove("player_2.result.json");
+        remove("player_1.shot.json");
+        remove("player_1.result.json");
     }
 };
 
 
 TEST_F(ServerProcessShot, Hit_Detected){
     set_up_shot(0, 1);
-    srv.process_shot(2);
-    ASSERT_EQ(0, get_diff_dist("correct_hit_result.json", "player_2.result.json"));
+    srv.process_shot(1);
+    ASSERT_EQ(0, get_diff_dist("correct_hit_result.json", "player_1.result.json"));
 }
 
 TEST_F(ServerProcessShot, Miss_Detected){
     set_up_shot(1, 1);
-    srv.process_shot(2);
-    ASSERT_EQ(0, get_diff_dist("correct_miss_result.json", "player_2.result.json"));
+    srv.process_shot(1);
+    ASSERT_EQ(0, get_diff_dist("correct_miss_result.json", "player_1.result.json"));
 }
 
 TEST_F(ServerProcessShot, Out_Of_Bounds_X){
     set_up_shot(srv.board_size, 0);
-    srv.process_shot(2);
-    ASSERT_EQ(0, get_diff_dist("correct_out_of_bounds_result.json", "player_2.result.json"));
+    srv.process_shot(1);
+    ASSERT_EQ(0, get_diff_dist("correct_out_of_bounds_result.json", "player_1.result.json"));
 }
 
 TEST_F(ServerProcessShot, Out_Of_Bounds_Y){
     set_up_shot(0, srv.board_size);
-    srv.process_shot(2);
-    ASSERT_EQ(0, get_diff_dist("correct_out_of_bounds_result.json", "player_2.result.json"));
+    srv.process_shot(1);
+    ASSERT_EQ(0, get_diff_dist("correct_out_of_bounds_result.json", "player_1.result.json"));
 }
 
 TEST_F(ServerProcessShot, Max_In_Bounds){
@@ -271,8 +271,8 @@ TEST_F(ServerProcessShot, Bad_Player_Number_Low_High){
 
 TEST_F(ServerProcessShot, Cleanup){
     set_up_shot(0,0);
-    srv.process_shot(2);
-    ifstream f("player_2.shot.json");
+    srv.process_shot(1);
+    ifstream f("player_1.shot.json");
     ASSERT_FALSE(f.good());
 }
 

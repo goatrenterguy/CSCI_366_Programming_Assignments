@@ -105,9 +105,9 @@ int Server::evaluate_shot(unsigned int player, unsigned int x, unsigned int y) {
 	bool result = false;
 	if (x < OUT_OF_BOUNDS || x > board_size || y < OUT_OF_BOUNDS || y > board_size){
 		return OUT_OF_BOUNDS;
-	} else if (player == 1) {
-		result = this->p1_setup_board->get(y,x);
 	} else if (player == 2) {
+		result = this->p1_setup_board->get(y,x);
+	} else if (player == 1) {
 		result = this->p2_setup_board->get(y,x);
 	} else {
 		throw ServerException("Invalid player number");
